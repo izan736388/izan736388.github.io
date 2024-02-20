@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MP3 to FSB Converter</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="converter-box">
+        <h1>MP3 to FSB Converter</h1>
+        <input type="file" id="fileInput" accept=".mp3">
+        <button id="convertBtn">Convert to FSB</button>
+        <a id="downloadLink" style="display: none;"></a>
+    </div>
+    
+    <script>
+        document.getElementById('convertBtn').addEventListener('click', () => {
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+            if (!file) {
+                alert('Please select a file.');
+                return;
+            }
+            const downloadLink = document.getElementById('downloadLink');
+            const formData = new FormData();
+            formData.append('file', file);
+            fetch('/convert', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Conversion failed');
+                }
+                return response.blob();
+            })
+            .then(blob => {
+                const url = window.URL.createObjectURL(blob);
+                downloadLink.href = url;
+                downloadLink.download = 'output.fsb';
+                downloadLink.click();
+                window.URL.revokeObjectURL(url);
+                alert('Conversion completed');
+            })
+            .catch(error => {
+                console.error('Conversion error:', error.message);
+                alert('Conversion error. Please try again.');
+            });
+        });
+    </script>
+</body>
+</html>
